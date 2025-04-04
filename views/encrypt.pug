@@ -1,0 +1,29 @@
+doctype html
+html
+  head
+    title Mã hóa thông tin
+    link(rel='stylesheet', href='/css/style.css') 
+  body
+    include header.pug
+    h1 Mã hóa thông tin bằng RSA
+
+    form(action='/encrypt', method='POST')
+      label(for='message') Nhập thông tin cần mã hóa:
+      input(type='text', id='message', name='message', placeholder='Nhập thông tin...', autocomplete='off' value=message)
+      button(type='submit') Mã hóa
+
+    if encryptedMessage
+      h2 Thông tin đã mã hóa: 
+      textarea(id='encryptedMessage', rows='10', cols='50')= encryptedMessage
+
+    // Form giải mã
+    form(action='/decrypt', method='POST')
+      label(for='encryptedData') Nhập thông tin đã mã hóa (Base64):
+      input(type='text', id='encryptedData', name='encryptedData', placeholder='Nhập dữ liệu mã hóa...' autocomplete='off' value=encryptedData)
+      button(type='submit') Giải mã
+
+    // Hiển thị kết quả giải mã nếu có
+    if decryptedMessage
+      h2 Thông tin đã giải mã:
+      textarea(id='decryptedMessage', rows='10', cols='50')= decryptedMessage
+

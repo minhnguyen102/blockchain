@@ -1,0 +1,16 @@
+doctype html
+html
+  head
+    title Image Encoder
+    link(rel='stylesheet', href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css')
+  body
+    .container
+      h1 Image Encoder
+      form(action='/encode', method='POST', enctype='multipart/form-data')
+        .form-group
+          label(for='image') Upload an image
+          input.form-control(type='file', name='image', required)
+        button.btn.btn-primary(type='submit') Encode
+      if encodedImage
+        h2 Encoded Image
+        textarea.form-control(rows='10')= encodedImage

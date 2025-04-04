@@ -1,0 +1,37 @@
+extends layout
+
+block content
+  include header
+  h1 Digital Signature Demo
+  form(method='POST', action='/sign')
+    .form-group
+      label(for='data') Data to Sign
+      textarea.form-control(name='data', rows='3', placeholder='Enter data to sign')= data || ''
+    button.btn.btn-primary(type='submit') Sign Data
+
+  if hash
+    h2 Hash of Data
+    pre= hash
+
+  if signature
+    h2 Signature
+    pre= signature
+
+  if verified !== null
+    h2 Verification Result
+    if verified
+      .alert.alert-success Signature is valid!
+    else
+      .alert.alert-danger Signature is invalid!
+
+  if signature
+    hr
+    h2 Verify Signature
+    form(method='POST', action='/verify')
+      .form-group
+        label(for='data') Data to Verify
+        textarea.form-control(name='data', rows='3')= data
+      .form-group
+        label(for='signature') Signature
+        textarea.form-control(name='signature', rows='3')= signature
+      button.btn.btn-secondary(type='submit') Verify Signature

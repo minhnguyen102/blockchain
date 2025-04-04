@@ -1,0 +1,165 @@
+extends layout
+include alert
+
+block content
+  include header.pug
+  style.
+    .changed-block {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 5px;
+    }
+
+    .list-group-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    #pendingTransactions {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      display: none; /* Ẩn ban đầu */
+    }
+
+    #togglePending {
+      margin-bottom: 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #togglePending:hover {
+      background-color: #0056b3;
+    }
+  
+  h1 Blockchain Library Management
+  a(href="/file") Get File 
+  form(method='POST', action='/addTransaction')
+    .form-group
+      label(for='studentId') Mã nhân viên:
+      input.form-control(type='text', name='employeeId', required)
+    .form-group
+      label(for='courseId') Mã sách:
+      input.form-control(type='text', name='bookId', required)
+    .form-group
+      label(for='courseId') Mã sinh viên:
+      input.form-control(type='text', name='studentId', required)
+    .form-group
+      label(for='date') Ngày mượn:
+      input.form-control(type='date', name='borowed_date', required)
+    .form-group
+      label(for='date') Ngày trả:
+      input.form-control(type='date', name='return_date', required)
+    .form-group
+      label(for='grade') Chi phí:
+      input.form-control(type='number', name='cost', step='0.1', required)
+    button.btn.btn-primary(type='submit') Thêm Giao Dịch
+  br 
+  
+  //- Nút để hiển thị/ẩn khu vực pending transactions
+  button.btn.btn-secondary.mb-3#togglePending Xem Giao Dịch Đang Chờ (#{pendingTransactions.length})
+
+  //- Khu vực hiển thị các transaction đang chờ
+  #pendingTransactions(style='display: none;')
+    h2 Giao Dịch Đang Chờ (#{pendingTransactions.length})
+    if pendingTransactions.length > 0
+      ul.list-group
+        each transaction in pendingTransactions
+          li.list-group-item
+            strong Mã nhân viên: 
+            span #{transaction.employeeId}
+            br
+            strong Mã sách: 
+            span #{transaction.bookId}
+            br
+            strong Mã học sinh: 
+            span #{transaction.studentId}
+            br
+            strong Ngày mượn: 
+            span #{transaction.borowed_date}
+            br
+            strong Ngày trả: 
+            span #{transaction.return_date}
+            br
+            strong Chi phí: 
+            span #{transaction.cost}
+    else
+      p Không có giao dịch đang chờ.
+
+  h2 Chuỗi Khối
+  each block in chain
+    - const isChanged = block.index !== 0 && discrepancies.some(discrepancy => discrepancy.index === block.index);
+    .card.mb-3(class=isChanged ? 'changed-block' : '')
+      .card-header
+        strong Block #{block.index}
+      .card-body
+        p
+          strong Previous Hash: 
+          span #{block.previousHash}
+        p
+          strong Timestamp: 
+          span #{new Date(block.timestamp).toLocaleString()}
+        p
+          strong Hash: 
+          span #{block.hash}
+        p
+          strong Merkle Root: 
+          span #{block.merkleRoot}
+        h5 Giao Dịch
+        ul.list-group
+          each transaction in block.transactions
+            li.list-group-item
+              strong Mã nhân viên: 
+              span #{transaction.employeeId}
+              br
+              strong Mã sách: 
+              span #{transaction.bookId}
+              br
+              strong Mã học sinh: 
+              span #{transaction.studentId}
+              br
+              strong Ngày mượn: 
+              span #{transaction.borowed_date}
+              br
+              strong Ngày trả: 
+              span #{transaction.return_date}
+              br
+              strong Chi phí: 
+              span #{transaction.cost}
+
+  if discrepancies.length > 0
+    h2 Discrepancies
+    ul.list-group
+      each discrepancy in discrepancies
+        li.list-group-item.changed-block
+          strong Block Index: 
+          span #{discrepancy.index}
+          br
+          strong Original Merkle Root: 
+          span #{discrepancy.originalMerkleRoot}
+          br
+          strong Calculated Merkle Root: 
+          span #{discrepancy.calculatedMerkleRoot}
+
+  script.
+    document.getElementById('togglePending').addEventListener('click', function() {
+      const pendingSection = document.getElementById('pendingTransactions');
+      if (pendingSection.style.display === 'none') {
+        pendingSection.style.display = 'block';
+        this.textContent = 'Ẩn Giao Dịch Đang Chờ';
+      } else {
+        pendingSection.style.display = 'none';
+        this.textContent = 'Xem Giao Dịch Đang Chờ (' + #{(pendingTransactions.length)}+")";
+      }
+    });
