@@ -80,20 +80,76 @@ class Blockchain {
         return this.chain;
     }
 
-    // Thêm phương thức để kiểm tra lại Merkle root
     verifyChain() {
         const discrepancies = [];
-        this.chain.forEach(block => {
-            if (block.index === 0) return; // Skip genesis block
+        for (let i = 0; i < this.chain.length; i++) {
+            const block = this.chain[i];
+
+            if (block.index === 0) continue; // Skip genesis block
+
+            // Verify Merkle Root
             const calculatedMerkleRoot = this.calculateMerkleRoot(block.transactions);
             if (block.merkleRoot !== calculatedMerkleRoot) {
                 discrepancies.push({
                     index: block.index,
-                    originalMerkleRoot: block.merkleRoot,
-                    calculatedMerkleRoot: calculatedMerkleRoot
+                    type: 'merkleRoot',
+                    original: block.merkleRoot,
+                    calculated: calculatedMerkleRoot
                 });
             }
-        });
+
+            // Verify Block Hash
+            const calculatedHash = this.hashBlock(block.previousHash, block.transactions, block.timestamp);
+            if (block.hash !== calculatedHash) {
+                discrepancies.push({
+                    index: block.index,
+                    type: 'blockHash',
+                    original: block.hash,
+                    calculated: calculatedHash
+                });
+            }
+
+            // Verify Previous Hash
+            if (i > 0 && block.previousHash !== this.chain[i - 1].hash) {
+                discrepancies.push({
+                    index: block.index,
+                    type: 'previousHash',
+                    original: block.previousHash,
+                    calculated: this.chain[i - 1].hash
+                });
+            }
+
+            // Verify Index
+            if (block.index !== i) {
+                discrepancies.push({
+                    index: block.index,
+                    type: 'index',
+                    original: block.index,
+                    expected: i
+                });
+            }
+        }
+
+        // Check for missing blocks
+        for (let i = 1; i < this.chain.length; i++) {
+            if (this.chain[i].index !== i) {
+                discrepancies.push({
+                    index: i,
+                    type: 'missingBlock',
+                    expected: `Block at index ${i} is missing`
+                });
+            }
+        }
+
+        // Check if the last block is missing
+        if (this.chain.length > 1 && this.chain[this.chain.length - 1].index !== this.chain.length - 1) {
+            discrepancies.push({
+                index: this.chain.length - 1,
+                type: 'missingLastBlock',
+                expected: `Last block at index ${this.chain.length - 1} is missing`
+            });
+        }
+
         return discrepancies;
     }
 }
